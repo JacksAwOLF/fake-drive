@@ -1,5 +1,6 @@
 // Import the necessary Firebase modules
 import { initializeApp } from "firebase/app";
+import { getFirestore } from "firebase/firestore";
 
 // Your Firebase config here
 const firebaseConfig = {
@@ -13,4 +14,6 @@ const firebaseConfig = {
 
 // Initialize Firebase
 const app = initializeApp(firebaseConfig);
-export default app;
+const db = getFirestore(app);
+
+export { app, db };
