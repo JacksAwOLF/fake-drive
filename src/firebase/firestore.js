@@ -2,11 +2,13 @@ import { db } from './config';
 import { 
   addDoc, collection, getDocs,
   query, where, setDoc, doc
- } from "firebase/firestore"; 
+ } from "firebase/firestore";
+
+const fileMetadataCollection = collection(db, "files");
 
 const getFilesInPath = async (parentPath) => {
   const q = query(
-    collection(db, "files"), 
+    fileMetadataCollection, 
     where("parentPath", "==", parentPath)
   );
 
@@ -22,7 +24,7 @@ const addFile = async (parentPath, fileName) => {
     fileName: fileName
   };
 
-  await addDoc(collection(db, "files"), newFileData);
+  await addDoc(fileMetadataCollection, newFileData);
   return newFileData;
 }
 

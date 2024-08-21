@@ -12,7 +12,6 @@ const contentStyle = {
 }
 
 const Popup = (props) => {
-  console.log("popup reload", props);
   return (
     <> 
       { props.show && 
