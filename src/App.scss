@@ -1,7 +1,7 @@
 .container {
   width: 100vw;
   height: 100vh;
-  background-color: black;
+  background-color: white;
   display: grid;
   grid-template: 
     "sidebar header" 1fr
@@ -9,7 +9,6 @@
     / 1fr 5fr;
 
   div {
-    // border: 1px white solid;
     border-radius: 50px;
     margin: 20px;
   }
@@ -22,10 +21,11 @@
   .header {
     background-color: coral;
     grid-area: header;
+    
   }
 
   .dragarea {
-    background-color: gray;
+    background-color: lightgray;
     grid-area: dragarea;
   }
 }

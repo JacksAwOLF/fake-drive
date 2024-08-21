@@ -1,16 +1,31 @@
 import './App.scss';
+import { useEffect, useState } from 'react';
 
 function App() {
+
+  const params = new URLSearchParams(document.location.search);
+  const path = params.get("path");
+  
+  useEffect(() => {
+    console.log("load webpage path is ", path);
+
+    
+  }, []);
+
+  
+
   return (
     <>
-      <div class="container">
-        <div class="sidebar">
+      <div className="container">
+        <div className="sidebar">
           
         </div>
-        <div class="header">
-          
+        <div className="header">
+          <button>
+            New Folder
+          </button>
         </div>
-        <div class="dragarea">
+        <div className="dragarea">
 
         </div>
       </div>
