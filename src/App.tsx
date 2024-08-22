@@ -1,41 +1,39 @@
 import './App.scss';
-import { useEffect, useState } from 'react';
-import { getFilesInPath, addFile } from './firebase/firestore.js';
-import Popup from './components/popup.js';
-import File from './components/File.js';
+import React, { useEffect, useState } from 'react';
+import { getFiles, addNewFolder, FileMetadata } from './models/FileMetadata';
+import Popup from './components/Popup';
+import File from './components/File';
 
-function App() {
+const App: React.FC = () => {
   const params = new URLSearchParams(document.location.search);
 
-  const [path, setPath] = useState(params.get("path") || "/");
-  const [files, setFiles] = useState([]);
-  const [showNewFolder, setShowNewFolder] = useState(false);
-  const [newFolderName, setNewFolderName] = useState("");
+  const [path, setPath] = useState<string>(params.get("path") || "/");
+  const [files, setFiles] = useState<FileMetadata[]>([]);
+  const [showNewFolder, setShowNewFolder] = useState<boolean>(false);
+  const [newFolderName, setNewFolderName] = useState<string>("");
 
   // update list of files whenever the path updates
   useEffect(() => {
     let isMounted = true;
-    console.log("path udpated", path);
+    console.log("path updated", path);
     if (path === null) return;
 
     const loadFiles = async () => {
-      const result = await getFilesInPath(path);
+      const result = await getFiles(path);
     
       if (isMounted) {
-        let fileArray = [];
-        result.forEach((doc) => fileArray.push(doc.data()));
-        setFiles(fileArray);
+        setFiles(result);
       }
     }
 
     loadFiles();
-    return () => isMounted = false; // prevents double execution in StrictMode
+    return () => { isMounted = false; }; // prevents double execution in StrictMode
   }, [path]);
 
   const handleAddFolder = async () => {
     setShowNewFolder(false);
     setNewFolderName("");
-    const newFileData = await addFile(path, newFolderName);
+    const newFileData = await addNewFolder(path, newFolderName);
     setFiles((prevFiles) => [...prevFiles, newFileData]);
   }
 
@@ -67,7 +65,8 @@ function App() {
 
       </div>
 
-      <Popup show={showNewFolder}>
+      {/* Uncomment and use Popup as needed */}
+      {/* <Popup show={showNewFolder}>
         <input 
           type="text" 
           value={newFolderName} 
@@ -77,7 +76,7 @@ function App() {
           type="submit" 
           onClick={handleAddFolder} 
         />
-      </Popup>
+      </Popup> */}
     </>
   );
 }

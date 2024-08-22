@@ -1,6 +1,11 @@
 import { useState } from 'react';
 
-const File = ({fileName, setPath}) => {
+interface FileProps {
+  fileName: string;
+  setPath: React.Dispatch<React.SetStateAction<string>>;
+}
+
+const File: React.FC<FileProps> = ({ fileName, setPath }) => {
 
   const handleClick = () => {
     setPath((prevPath) => prevPath + fileName + "/");
