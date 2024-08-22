@@ -7,7 +7,7 @@ import File from './components/File';
 const App: React.FC = () => {
   const params = new URLSearchParams(document.location.search);
 
-  const [path, setPath] = useState<string>(params.get("path") || "/");
+  const [nodeId, setNodeId] = useState<string>(params.get("nodeID") || "");
   const [files, setFiles] = useState<FileMetadata[]>([]);
   const [showNewFolder, setShowNewFolder] = useState<boolean>(false);
   const [newFolderName, setNewFolderName] = useState<string>("");
@@ -15,12 +15,9 @@ const App: React.FC = () => {
   // update list of files whenever the path updates
   useEffect(() => {
     let isMounted = true;
-    console.log("path updated", path);
-    if (path === null) return;
 
     const loadFiles = async () => {
-      const result = await getFiles(path);
-    
+      const result = await getFiles(nodeId);
       if (isMounted) {
         setFiles(result);
       }
@@ -28,12 +25,12 @@ const App: React.FC = () => {
 
     loadFiles();
     return () => { isMounted = false; }; // prevents double execution in StrictMode
-  }, [path]);
+  }, [nodeId]);
 
   const handleAddFolder = async () => {
     setShowNewFolder(false);
     setNewFolderName("");
-    const newFileData = await addNewFolder(path, newFolderName);
+    const newFileData = await addNewFolder(nodeId, newFolderName);
     setFiles((prevFiles) => [...prevFiles, newFileData]);
   }
 
@@ -58,15 +55,14 @@ const App: React.FC = () => {
           {files.map((file, ind) => 
             <File 
               key={ind} 
-              fileName={file.fileName} 
-              setPath={setPath} 
+              file={file} 
+              setNodeId={setNodeId}
             />)}
         </div>
 
       </div>
 
-      {/* Uncomment and use Popup as needed */}
-      {/* <Popup show={showNewFolder}>
+      <Popup show={showNewFolder}>
         <input 
           type="text" 
           value={newFolderName} 
@@ -76,7 +72,7 @@ const App: React.FC = () => {
           type="submit" 
           onClick={handleAddFolder} 
         />
-      </Popup> */}
+      </Popup>
     </>
   );
 }

@@ -4,7 +4,7 @@ import {
   query, where, setDoc, doc
  } from "firebase/firestore";
 
-const fileMetadataCollection = collection(db, "files");
+const fileMetadataCollection = collection(db, "fileMetadata");
 
 export interface FileMetadata {
   id: string,

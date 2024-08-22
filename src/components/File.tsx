@@ -1,20 +1,21 @@
 import { useState } from 'react';
+import { FileMetadata } from '../models/FileMetadata';
 
 interface FileProps {
-  fileName: string;
-  setPath: React.Dispatch<React.SetStateAction<string>>;
+  file: FileMetadata
+  setNodeId: React.Dispatch<React.SetStateAction<string>>;
 }
 
-const File: React.FC<FileProps> = ({ fileName, setPath }) => {
+const File: React.FC<FileProps> = ({ file, setNodeId }) => {
 
   const handleClick = () => {
-    setPath((prevPath) => prevPath + fileName + "/");
+    setNodeId(file.id);
   }
 
   return (
     <>
       <button onClick={handleClick}>
-        {fileName}
+        {file.fileName}
       </button>
       <br />
     </>
