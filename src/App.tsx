@@ -4,10 +4,12 @@ import { getFiles, addNewFolder, FileMetadata } from './models/FileMetadata';
 import Popup from './components/Popup';
 import File from './components/File';
 
-const App: React.FC = () => {
-  const params = new URLSearchParams(document.location.search);
+const nodeIdURLParam = "nodeId";
 
-  const [nodeId, setNodeId] = useState<string>(params.get("nodeID") || "");
+const App: React.FC = () => {
+  const url = new URL(window.location.href); 
+
+  const [nodeId, setNodeId] = useState<string>(url.searchParams.get(nodeIdURLParam) || "");
   const [files, setFiles] = useState<FileMetadata[]>([]);
   const [showNewFolder, setShowNewFolder] = useState<boolean>(false);
   const [newFolderName, setNewFolderName] = useState<string>("");
@@ -15,17 +17,43 @@ const App: React.FC = () => {
   // update list of files whenever the path updates
   useEffect(() => {
     let isMounted = true;
-
     const loadFiles = async () => {
       const result = await getFiles(nodeId);
       if (isMounted) {
         setFiles(result);
+
+        // update url
+        // if (nodeId !== "") {
+        //   url.searchParams.set(nodeIdURLParam, nodeId);
+        //   const newURL = url.pathname + '?' + url.searchParams.toString();
+        //   console.log("pushing state", nodeId);
+        //   window.history.pushState({nodeId: nodeId}, '', newURL);
+        // }
       }
     }
 
     loadFiles();
     return () => { isMounted = false; }; // prevents double execution in StrictMode
   }, [nodeId]);
+
+  // enable browswer backbutton event
+  useEffect(() => {
+    const handlePopState = (event: PopStateEvent) => {
+      console.log("popstateevent");
+      if (event.state) {
+        console.log("update state", event.state);
+        setNodeId(event.state.nodeId);
+      }
+    };
+    
+    window.addEventListener('popstate', handlePopState);
+
+    const newURL = url.pathname + '?' + url.searchParams.toString();
+    console.log("hi");
+    window.history.replaceState({nodeId: nodeId}, '', )
+
+    return () => window.removeEventListener('popstate', handlePopState);
+  }, []);
 
   const handleAddFolder = async () => {
     setShowNewFolder(false);

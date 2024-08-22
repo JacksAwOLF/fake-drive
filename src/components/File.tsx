@@ -6,10 +6,17 @@ interface FileProps {
   setNodeId: React.Dispatch<React.SetStateAction<string>>;
 }
 
+const nodeIdURLParam = "nodeId";
+
 const File: React.FC<FileProps> = ({ file, setNodeId }) => {
 
   const handleClick = () => {
     setNodeId(file.id);
+    const url = new URL(window.location.href); 
+    url.searchParams.set(nodeIdURLParam, file.id);
+    const newURL = url.pathname + '?' + url.searchParams.toString();
+    console.log("pushing state", file.id);
+    window.history.pushState({nodeId: file.id}, '', newURL);
   }
 
   return (
