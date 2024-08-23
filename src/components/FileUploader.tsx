@@ -1,15 +1,17 @@
 import React, { useState, ReactNode } from 'react';
 import { storage } from '../firebase/config';
 import { ref, uploadBytesResumable, getDownloadURL } from 'firebase/storage';
-import { addNewFile, addNewFolder } from '../models/FileMetadata';
+import { FileMetadata, addNewFile, addNewFolder } from '../models/FileMetadata';
 
 
 interface FileUploaderProps {
   parentId: string,
-  children: ReactNode
+  children: ReactNode,
+  appendFile: (file: FileMetadata) => void;
 }
 
-const FileUploader: React.FC<FileUploaderProps> = ({parentId, children}) => {
+const FileUploader: React.FC<FileUploaderProps> = 
+  ({parentId, children, appendFile}) => {
 
   const [dragging, setDragging] = useState(false);
   const [uploading, setUploading] = useState(false);
@@ -48,12 +50,14 @@ const FileUploader: React.FC<FileUploaderProps> = ({parentId, children}) => {
       if (entry.isFile) {
         console.log("file", entry);
         const file = await getFile(entry);
-        const ret = await uploadFile(file, parId);
-        console.log("uploaded", ret);
+        await uploadFile(file, parId, parId === parentId);
       } 
       else if (entry.isDirectory) {
         console.log("folder", entry);
         const folder = await addNewFolder(parId, entry.name);
+        if (parId === parentId) {
+          appendFile(folder);
+        }
         const directoryEntry = await readDirectoryEntry(entry as FileSystemDirectoryEntry);
         await traverseEntryList(directoryEntry, folder.id);
       }
@@ -66,12 +70,12 @@ const FileUploader: React.FC<FileUploaderProps> = ({parentId, children}) => {
     });
   };
 
-  const uploadFile = async (file: File, parentId: string) => {
+  const uploadFile = async (file: File, parentId: string, updateFiles: boolean) => {
     const fileRef = ref(storage, `uploads/${file.name}`);
 
     const uploadTask = uploadBytesResumable(fileRef, file);
 
-    return uploadTask.on(
+    uploadTask.on(
       'state_changed',
       (snapshot) => {
         const progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
@@ -83,8 +87,10 @@ const FileUploader: React.FC<FileUploaderProps> = ({parentId, children}) => {
       async () => {
         const downloadURL = await getDownloadURL(uploadTask.snapshot.ref);
         console.log(file.name, 'available at', downloadURL);
-        addNewFile(parentId, file.name, downloadURL);
-        return downloadURL;
+        const newFile = await addNewFile(parentId, file.name, downloadURL);
+        if (updateFiles) {
+          appendFile(newFile);
+        }
       }
     );
   };
