@@ -47,3 +47,22 @@ export async function addNewFolder(
     ...newFileData
   };
 }
+
+export async function addNewFile(
+  parentId: string, fileName: string, contentLink: string
+): Promise<FileMetadata> {
+
+  const newFileData: Omit<FileMetadata, 'id'> = {
+    contentLink: contentLink,
+    isFile: true,
+    parentId: parentId,
+    fileName: fileName
+  };
+
+  const docRef = await addDoc(fileMetadataCollection, newFileData);
+
+  return {
+    id: docRef.id,
+    ...newFileData
+  };
+}

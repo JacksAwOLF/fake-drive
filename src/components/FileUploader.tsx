@@ -1,13 +1,15 @@
 import React, { useState, ReactNode } from 'react';
 import { storage } from '../firebase/config';
 import { ref, uploadBytesResumable, getDownloadURL } from 'firebase/storage';
+import { addNewFile, addNewFolder } from '../models/FileMetadata';
 
 
 interface FileUploaderProps {
+  parentId: string,
   children: ReactNode
 }
 
-const FileUploader: React.FC<FileUploaderProps> = ({children}) => {
+const FileUploader: React.FC<FileUploaderProps> = ({parentId, children}) => {
 
   const [dragging, setDragging] = useState(false);
   const [uploading, setUploading] = useState(false);
@@ -26,23 +28,36 @@ const FileUploader: React.FC<FileUploaderProps> = ({children}) => {
   const handleDrop = async (e: React.DragEvent<HTMLDivElement>) => {
     e.preventDefault();
     setDragging(false);
-
-    const items = e.dataTransfer.items;
     setUploading(true);
 
-    for (let i = 0; i < items.length; i++) {
-      const item = items[i].webkitGetAsEntry();
-      if (item) {
-        if (item.isFile) {
-          const file = await getFile(item);
-          await uploadFile(file);
-        } else if (item.isDirectory) {
-          await traverseDirectory(item);
-        }
-      }
+    const items = e.dataTransfer.items;
+    let entries = [];
+    for (const item of items) {
+      if (item)
+        entries.push(item.webkitGetAsEntry());
     }
 
+    traverseEntryList(entries, parentId);
     setUploading(false);
+  };
+
+  const traverseEntryList = async (entries: (FileSystemEntry | null)[], parId: string) => {
+    for (const entry of entries) {
+      if (entry === null) continue;
+
+      if (entry.isFile) {
+        console.log("file", entry);
+        const file = await getFile(entry);
+        const ret = await uploadFile(file, parId);
+        console.log("uploaded", ret);
+      } 
+      else if (entry.isDirectory) {
+        console.log("folder", entry);
+        const folder = await addNewFolder(parId, entry.name);
+        const directoryEntry = await readDirectoryEntry(entry as FileSystemDirectoryEntry);
+        await traverseEntryList(directoryEntry, folder.id);
+      }
+    }
   };
 
   const getFile = (entry: any): Promise<File> => {
@@ -51,40 +66,12 @@ const FileUploader: React.FC<FileUploaderProps> = ({children}) => {
     });
   };
 
-  const traverseDirectory = async (directoryEntry: any) => {
-    const reader = directoryEntry.createReader();
-    let entries: any[] = [];
-    let readEntries = await readAllDirectoryEntries(reader);
-
-    while (readEntries.length > 0) {
-      entries = entries.concat(readEntries);
-      readEntries = await readAllDirectoryEntries(reader);
-    }
-
-    for (const entry of entries) {
-      if (entry.isFile) {
-        const file = await getFile(entry);
-        await uploadFile(file);
-      } else if (entry.isDirectory) {
-        await traverseDirectory(entry);
-      }
-    }
-  };
-
-  const readAllDirectoryEntries = (directoryReader: any) => {
-    return new Promise<any[]>((resolve, reject) => {
-      directoryReader.readEntries((entries: any[]) => {
-        resolve(entries);
-      }, (error: any) => reject(error));
-    });
-  };
-
-  const uploadFile = async (file: File) => {
+  const uploadFile = async (file: File, parentId: string) => {
     const fileRef = ref(storage, `uploads/${file.name}`);
 
     const uploadTask = uploadBytesResumable(fileRef, file);
 
-    uploadTask.on(
+    return uploadTask.on(
       'state_changed',
       (snapshot) => {
         const progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
@@ -95,10 +82,35 @@ const FileUploader: React.FC<FileUploaderProps> = ({children}) => {
       },
       async () => {
         const downloadURL = await getDownloadURL(uploadTask.snapshot.ref);
-        console.log('File available at', downloadURL);
+        console.log(file.name, 'available at', downloadURL);
+        addNewFile(parentId, file.name, downloadURL);
+        return downloadURL;
       }
     );
   };
+
+  const readDirectoryEntry = async (entry: FileSystemDirectoryEntry) => {
+    const reader = entry.createReader();
+    let entries: any[] = [];
+    let readEntries = await readAllDirectoryEntries(reader);
+
+    while (readEntries.length > 0) {
+      entries = entries.concat(readEntries);
+      readEntries = await readAllDirectoryEntries(reader);
+    }
+
+    return entries;
+  }
+
+  const readAllDirectoryEntries = (directoryReader: any) => {
+    return new Promise<any[]>((resolve, reject) => {
+      directoryReader.readEntries((entries: any[]) => {
+        resolve(entries);
+      }, (error: any) => reject(error));
+    });
+  };
+
+  
 
   return (
     <div 
@@ -115,7 +127,7 @@ const FileUploader: React.FC<FileUploaderProps> = ({children}) => {
       ) : (
         <div>Drag and drop files here to upload</div>
       )}
-      
+
       {children}
     </div>
   )

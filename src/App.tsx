@@ -80,7 +80,7 @@ const App: React.FC = () => {
           </button>
         </div>
 
-        <FileUploader>
+        <FileUploader parentId={nodeId}>
           {files.map((file, ind) => 
             <File 
               key={ind} 
