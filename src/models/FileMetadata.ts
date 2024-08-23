@@ -1,7 +1,7 @@
 import { db } from '../firebase/config';
 import { 
   addDoc, collection, getDocs,
-  query, where, setDoc, doc
+  query, where, setDoc, doc, getDoc
  } from "firebase/firestore";
 
 const fileMetadataCollection = collection(db, "fileMetadata");
@@ -13,6 +13,12 @@ export interface FileMetadata {
   isFile: boolean,
   contentLink: string,
 };
+
+export async function checkFileExist(id: string): Promise<boolean> {
+  const docRef = doc(fileMetadataCollection, id);
+  const docSnapshot = await getDoc(docRef);
+  return docSnapshot.exists();
+}
 
 export async function getFiles(parentId: string): 
   Promise<FileMetadata[]> {

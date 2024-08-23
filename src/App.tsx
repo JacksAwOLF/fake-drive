@@ -1,6 +1,6 @@
 import './App.scss';
 import React, { useEffect, useState } from 'react';
-import { getFiles, addNewFolder, FileMetadata } from './models/FileMetadata';
+import { checkFileExist, getFiles, addNewFolder, FileMetadata } from './models/FileMetadata';
 import Popup from './components/Popup';
 import File from './components/File';
 import FileUploader from './components/FileUploader';
@@ -21,17 +21,23 @@ const App: React.FC = () => {
   useEffect(() => {
     let isMounted = true;
     const loadFiles = async () => {
+
+      // if nodeId points to non existing entry, set it to empty
+      if (nodeId !== "") {
+        const fileExists = await checkFileExist(nodeId);
+        if (isMounted && !fileExists) {
+          console.log("file doesn't exist")
+          setNodeId("");
+          url.searchParams.set(nodeIdURLParam, "");
+          const newURL = url.pathname + '?' + url.searchParams.toString();
+          window.history.replaceState({nodeId: ""}, '', newURL);
+          return;
+        }
+      }
+
       const result = await getFiles(nodeId);
       if (isMounted) {
         setFiles(result);
-
-        // update url
-        // if (nodeId !== "") {
-        //   url.searchParams.set(nodeIdURLParam, nodeId);
-        //   const newURL = url.pathname + '?' + url.searchParams.toString();
-        //   console.log("pushing state", nodeId);
-        //   window.history.pushState({nodeId: nodeId}, '', newURL);
-        // }
       }
     }
 
@@ -74,9 +80,6 @@ const App: React.FC = () => {
         <div className="header">
           <button onClick={() => setShowNewFolder(true)}>
             New Folder
-          </button>
-          <button>
-            Add File
           </button>
         </div>
 

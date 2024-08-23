@@ -8,9 +8,9 @@
     "sidebar dragarea" 5fr
     / 1fr 5fr;
 
-  div {
+  > div {
     border-radius: 50px;
-    margin: 20px;
+    margin: 10px;
   }
 
   .sidebar {
@@ -21,11 +21,18 @@
   .header {
     background-color: coral;
     grid-area: header;
-    
+    display: flex;
+    align-content: center;
+    flex-wrap: wrap;
+    padding: 20px;
   }
 
   .dragarea {
     background-color: lightgray;
     grid-area: dragarea;
   }
+}
+
+p {
+  margin: 0px;
 }

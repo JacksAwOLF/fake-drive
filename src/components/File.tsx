@@ -1,5 +1,7 @@
-import { useState } from 'react';
+import { CSSProperties, useState } from 'react';
 import { FileMetadata } from '../models/FileMetadata';
+import fileIcon from '../imgs/file.png';
+import folderIcon from '../imgs/folder.png';
 
 interface FileProps {
   file: FileMetadata
@@ -7,6 +9,17 @@ interface FileProps {
 }
 
 const nodeIdURLParam = "nodeId";
+
+const containerStyle: CSSProperties  = {
+  border: "1px solid white",
+  borderRadius: "0px",
+  display: "inline-block"
+}
+
+const imgStyle: CSSProperties = {
+  width: "100px",
+  height: "100px"
+}
 
 const File: React.FC<FileProps> = ({ file, setNodeId }) => {
 
@@ -26,12 +39,14 @@ const File: React.FC<FileProps> = ({ file, setNodeId }) => {
   }
 
   return (
-    <>
-      <button onClick={handleClick}>
-        {file.fileName}
-      </button>
-      <br />
-    </>
+    <div style={containerStyle} onClick={handleClick}>
+      <img 
+        src={file.isFile ? fileIcon : folderIcon} 
+        alt={file.fileName} 
+        style={imgStyle}
+      />
+      <p> {file.fileName} </p>
+    </div>
   );
 }
 
