@@ -3,6 +3,7 @@ import React, { useEffect, useState } from 'react';
 import { getFiles, addNewFolder, FileMetadata } from './models/FileMetadata';
 import Popup from './components/Popup';
 import File from './components/File';
+import FileUploader from './components/FileUploader';
 
 const nodeIdURLParam = "nodeId";
 
@@ -13,6 +14,8 @@ const App: React.FC = () => {
   const [files, setFiles] = useState<FileMetadata[]>([]);
   const [showNewFolder, setShowNewFolder] = useState<boolean>(false);
   const [newFolderName, setNewFolderName] = useState<string>("");
+
+  
 
   // update list of files whenever the path updates
   useEffect(() => {
@@ -39,19 +42,15 @@ const App: React.FC = () => {
   // enable browswer backbutton event
   useEffect(() => {
     const handlePopState = (event: PopStateEvent) => {
-      console.log("popstateevent");
       if (event.state) {
-        console.log("update state", event.state);
         setNodeId(event.state.nodeId);
       }
     };
-    
-    window.addEventListener('popstate', handlePopState);
 
     const newURL = url.pathname + '?' + url.searchParams.toString();
-    console.log("hi");
-    window.history.replaceState({nodeId: nodeId}, '', )
+    window.history.replaceState({nodeId: nodeId}, '', );
 
+    window.addEventListener('popstate', handlePopState);
     return () => window.removeEventListener('popstate', handlePopState);
   }, []);
 
@@ -61,6 +60,8 @@ const App: React.FC = () => {
     const newFileData = await addNewFolder(nodeId, newFolderName);
     setFiles((prevFiles) => [...prevFiles, newFileData]);
   }
+
+  
 
   return (
     <>
@@ -79,14 +80,14 @@ const App: React.FC = () => {
           </button>
         </div>
 
-        <div className="dragarea">
+        <FileUploader>
           {files.map((file, ind) => 
             <File 
               key={ind} 
               file={file} 
               setNodeId={setNodeId}
             />)}
-        </div>
+        </FileUploader>
 
       </div>
 
