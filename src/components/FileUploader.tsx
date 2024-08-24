@@ -1,7 +1,7 @@
 import React, { useState, ReactNode } from 'react';
 import { storage } from '../firebase/config';
 import { ref, uploadBytesResumable, getDownloadURL } from 'firebase/storage';
-import { FileMetadata, addNewFile, addNewFolder } from '../models/FileMetadata';
+import { FileMetadata, addNewFile, addNewFolder, updateContentLink } from '../models/FileMetadata';
 
 interface FileUploaderProps {
   parentId: string,
@@ -76,7 +76,11 @@ const FileUploader: React.FC<FileUploaderProps> =
   const uploadFile = async (file: File, parId: string, updateFiles: boolean) => {
     setUploading(prev => prev + 1);
 
-    const fileRef = ref(storage, `uploads/${file.name}`);
+    // get UID of file first so we can set name for storage
+    const newFile = await addNewFile(parId, file.name, '');
+
+    // firebase storage upload task
+    const fileRef = ref(storage, `uploads/${newFile.id}`);
     const uploadTask = uploadBytesResumable(fileRef, file);
     uploadTask.on(
       'state_changed',
@@ -90,9 +94,15 @@ const FileUploader: React.FC<FileUploaderProps> =
       async () => {
         const downloadURL = await getDownloadURL(uploadTask.snapshot.ref);
         console.log(file.name, 'available at', downloadURL);
-        const newFile = await addNewFile(parId, file.name, downloadURL);
+
+        // update firestore entry to include download URL
+        updateContentLink(newFile.id, downloadURL);
+    
         if (updateFiles) {
-          appendFile(newFile);
+          appendFile({
+            ...newFile,
+            contentLink: downloadURL
+          });
         }
 
         setUploading(prev => prev - 1);

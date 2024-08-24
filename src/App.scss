@@ -4,8 +4,8 @@
   background-color: lightcyan;
   display: grid;
   grid-template: 
-    "sidebar header" 1fr
-    "sidebar dragarea" 5fr
+    "sidebar header" 
+    "sidebar dragarea" 
     / 1fr 3fr;
 
   > div {
@@ -32,7 +32,7 @@
     justify-content: center;
     flex-wrap: wrap;
     gap: 2em;
-    max-height: 15vh;
+    padding: 2em;
 
     input {
       min-height: 30px;
@@ -51,6 +51,7 @@
     grid-area: dragarea;
     display: flex;
     padding: 10%;
+    min-height: 70vh;
 
     .fileUploader {
       min-height: 80%;
@@ -69,6 +70,7 @@
         display: inline-block;
         position: relative;
         margin: 10px;
+        min-width: 100px;
 
         img {
           width: 100px;

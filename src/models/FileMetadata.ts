@@ -1,7 +1,7 @@
 import { db } from '../firebase/config';
 import { 
-  addDoc, collection, getDocs,
-  query, where, setDoc, doc, getDoc, deleteDoc
+  addDoc, collection, getDocs, updateDoc,
+  query, where, doc, getDoc, deleteDoc
  } from "firebase/firestore";
 
 const fileMetadataCollection = collection(db, "fileMetadata");
@@ -106,4 +106,11 @@ export async function addNewFile(
     id: docRef.id,
     ...newFileData
   };
+}
+
+export async function updateContentLink(fileId: string, contentLink: string) {
+  const docRef = doc(fileMetadataCollection, fileId);
+  await updateDoc(docRef, {
+    contentLink: contentLink
+  });
 }
