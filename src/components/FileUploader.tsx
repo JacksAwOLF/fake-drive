@@ -1,7 +1,7 @@
 import React, { useState, ReactNode } from 'react';
 import { storage } from '../firebase/config';
 import { ref, uploadBytesResumable, getDownloadURL } from 'firebase/storage';
-import { FileMetadata, addNewFile, addNewFolder, updateContentLink } from '../models/FileMetadata';
+import { FileMetadata, addNewFile, updateContentLink } from '../models/FileMetadata';
 
 interface FileUploaderProps {
   parentId: string,
@@ -61,7 +61,7 @@ const FileUploader: React.FC<FileUploaderProps> =
 
       else if (entry.isDirectory) {
         // create folder entry in firestore and update files
-        const folder = await addNewFolder(parId, entry.name);
+        const folder = await addNewFile(parId, entry.name, false);
         if (parId === parentId) {
           appendFile(folder);
         }
@@ -77,7 +77,7 @@ const FileUploader: React.FC<FileUploaderProps> =
     setUploading(prev => prev + 1);
 
     // get UID of file first so we can set name for storage
-    const newFile = await addNewFile(parId, file.name, '');
+    const newFile = await addNewFile(parId, file.name, true);
 
     // firebase storage upload task
     const fileRef = ref(storage, `uploads/${newFile.id}`);

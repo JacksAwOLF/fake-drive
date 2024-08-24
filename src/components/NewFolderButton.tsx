@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { FileMetadata, addNewFolder } from '../models/FileMetadata';
+import { FileMetadata, addNewFile } from '../models/FileMetadata';
 
 interface NewFolderButtonProps {
   nodeId: string,
@@ -17,7 +17,7 @@ const NewFolderButton: React.FC<NewFolderButtonProps> =
       return;
     }
 
-    const newFileData = await addNewFolder(nodeId, newFolderName);
+    const newFileData = await addNewFile(nodeId, newFolderName, false);
     setFiles((prevFiles) => [...prevFiles, newFileData]);
     setNewFolderName("");
   }

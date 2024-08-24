@@ -1,7 +1,8 @@
 import { db } from '../firebase/config';
 import { 
   addDoc, collection, getDocs, updateDoc,
-  query, where, doc, getDoc, deleteDoc
+  query, where, doc, getDoc, deleteDoc,
+  Timestamp, serverTimestamp, orderBy, FieldValue
  } from "firebase/firestore";
 
 const fileMetadataCollection = collection(db, "fileMetadata");
@@ -12,6 +13,7 @@ export interface FileMetadata {
   fileName: string,
   isFile: boolean,
   contentLink: string,
+  createdAt?: FieldValue,
 };
 
 export const driveRoot = {
@@ -59,7 +61,8 @@ export async function getFiles(parentId: string):
   Promise<FileMetadata[]> {
   const querySnapshot = await getDocs(query(
     fileMetadataCollection, 
-    where("parentId", "==", parentId)
+    where("parentId", "==", parentId), 
+    orderBy("createdAt", "asc")
   ));
   
   const files: FileMetadata[] = querySnapshot.docs.map((doc) => ({
@@ -70,34 +73,16 @@ export async function getFiles(parentId: string):
   return files;
 }
 
-export async function addNewFolder(
-  parentId: string, folderName: string
+export async function addNewFile(
+  parentId: string, folderName: string, isFile: boolean
 ): Promise<FileMetadata> {
 
   const newFileData: Omit<FileMetadata, 'id'> = {
     contentLink: "",
-    isFile: false,
+    isFile: isFile,
     parentId: parentId,
-    fileName: folderName
-  };
-
-  const docRef = await addDoc(fileMetadataCollection, newFileData);
-
-  return {
-    id: docRef.id,
-    ...newFileData
-  };
-}
-
-export async function addNewFile(
-  parentId: string, fileName: string, contentLink: string
-): Promise<FileMetadata> {
-
-  const newFileData: Omit<FileMetadata, 'id'> = {
-    contentLink: contentLink,
-    isFile: true,
-    parentId: parentId,
-    fileName: fileName
+    fileName: folderName,
+    createdAt: serverTimestamp()
   };
 
   const docRef = await addDoc(fileMetadataCollection, newFileData);
