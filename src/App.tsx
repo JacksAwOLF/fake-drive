@@ -26,7 +26,6 @@ const App: React.FC = () => {
       if (nodeId !== "") {
         const fileExists = await checkFileExist(nodeId);
         if (isMounted && !fileExists) {
-          console.log("file doesn't exist")
           setNodeId("");
           url.searchParams.set(nodeIdURLParam, "");
           const newURL = url.pathname + '?' + url.searchParams.toString();
@@ -42,7 +41,7 @@ const App: React.FC = () => {
     }
 
     loadFiles();
-    return () => { isMounted = false; }; // prevents double execution in StrictMode
+    return () => { isMounted = false; }; 
   }, [nodeId]);
 
   // enable browswer backbutton event
@@ -92,6 +91,7 @@ const App: React.FC = () => {
               key={ind} 
               file={file} 
               setNodeId={setNodeId}
+              setFiles={setFiles}
             />)}
         </FileUploader>
 
