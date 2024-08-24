@@ -1,7 +1,6 @@
 import './App.scss';
 import React, { useEffect, useState } from 'react';
 import { checkFileExist, getFiles, addNewFolder, getAncestors, FileMetadata, driveRoot } from './models/FileMetadata';
-import Popup from './components/Popup';
 import File from './components/File';
 import FileUploader from './components/FileUploader';
 import { navToFileId } from './util/windowHistory';
@@ -22,7 +21,6 @@ const App: React.FC = () => {
   // list of ancestors of currenet folder nodeId
   const [fileList, setFileList] = useState<FileMetadata[]>([]);
 
-  const [showNewFolder, setShowNewFolder] = useState<boolean>(false);
   const [newFolderName, setNewFolderName] = useState<string>("");
   
 
@@ -76,7 +74,11 @@ const App: React.FC = () => {
   }, []);
 
   const handleAddFolder = async () => {
-    setShowNewFolder(false);
+    if (newFolderName === "") {
+      console.log("new folder name cannot be blank");
+      return;
+    }
+
     setNewFolderName("");
     const newFileData = await addNewFolder(nodeId, newFolderName);
     setFiles((prevFiles) => [...prevFiles, newFileData]);
@@ -85,50 +87,42 @@ const App: React.FC = () => {
   
 
   return (
-    <>
-      <div className="container">
+    <div className="container">
 
-        <div className="sidebar">
-          <AncestorList 
-            fileList={fileList}
-            setNodeId={setNodeId}
-          />
-        </div>
-
-        <div className="header">
-          <button onClick={() => setShowNewFolder(true)}>
-            New Folder
-          </button>
-        </div>
-
-        <FileUploader 
-          parentId={nodeId} 
-          appendFile={(file) => setFiles((prevFiles) => [...prevFiles, file])}
-        >
-          {files.map((file, ind) => 
-            <File 
-              key={ind} 
-              file={file} 
-              setNodeId={setNodeId}
-              setFiles={setFiles}
-              setFileList={setFileList}
-            />)}
-        </FileUploader>
-
+      <div className="sidebar">
+        <AncestorList 
+          fileList={fileList}
+          setNodeId={setNodeId}
+        />
       </div>
 
-      <Popup show={showNewFolder}>
+      <div className="header">
         <input 
           type="text" 
           value={newFolderName} 
           onChange={(e) => setNewFolderName(e.target.value)} 
+          placeholder="New folder name"
         />
-        <input 
-          type="submit" 
-          onClick={handleAddFolder} 
-        />
-      </Popup>
-    </>
+        <button onClick={() => handleAddFolder()}>
+          Add Folder
+        </button>
+      </div>
+
+      <FileUploader 
+        parentId={nodeId} 
+        appendFile={(file) => setFiles((prevFiles) => [...prevFiles, file])}
+      >
+        {files.map((file, ind) => 
+          <File 
+            key={ind} 
+            file={file} 
+            setNodeId={setNodeId}
+            setFiles={setFiles}
+            setFileList={setFileList}
+          />)}
+      </FileUploader>
+
+    </div>
   );
 }
 
