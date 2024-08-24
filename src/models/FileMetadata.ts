@@ -14,6 +14,14 @@ export interface FileMetadata {
   contentLink: string,
 };
 
+export const driveRoot = {
+  id: '',
+  parentId: '',
+  fileName: 'My Drive Root',
+  isFile: false,
+  contentLink: ''
+}
+
 export async function deleteFile(id: string) {
   const docRef = doc(fileMetadataCollection, id);
   await deleteDoc(docRef);
@@ -24,6 +32,28 @@ export async function checkFileExist(id: string): Promise<boolean> {
   const docSnapshot = await getDoc(docRef);
   return docSnapshot.exists();
 }
+
+export async function getAncestors(nodeId: string): Promise<FileMetadata[]> {
+  let ancestors = [];  
+  let curNode = nodeId;
+
+  while (curNode !== '') {
+    const docRef = doc(fileMetadataCollection, curNode);
+    const docSnapshot = await getDoc(docRef);
+    
+    ancestors.push({
+      id: docSnapshot.id,
+      ...(docSnapshot.data() as Omit<FileMetadata, 'id'>)
+    });
+    
+    curNode = (docSnapshot.data())!.parentId;
+  }
+  ancestors.push(driveRoot);
+
+  
+  return ancestors;
+}
+
 
 export async function getFiles(parentId: string): 
   Promise<FileMetadata[]> {

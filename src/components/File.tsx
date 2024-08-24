@@ -3,14 +3,14 @@ import { FileMetadata, deleteFile, getFiles } from '../models/FileMetadata';
 import fileIcon from '../imgs/file.png';
 import folderIcon from '../imgs/folder.png';
 import { deleteFileFromStorage } from '../models/fileStorage';
+import { navToFileId } from '../util/windowHistory';
 
 interface FileProps {
-  file: FileMetadata
+  file: FileMetadata;
   setNodeId: React.Dispatch<React.SetStateAction<string>>;
   setFiles: React.Dispatch<React.SetStateAction<FileMetadata[]>>;
+  setFileList: React.Dispatch<React.SetStateAction<FileMetadata[]>>;
 }
-
-const nodeIdURLParam = "nodeId";
 
 const containerStyle: CSSProperties  = {
   border: "1px solid white",
@@ -30,20 +30,15 @@ const delStyle: CSSProperties = {
   top: "0px"
 }
 
-const File: React.FC<FileProps> = ({ file, setNodeId, setFiles }) => {
+const File: React.FC<FileProps> = 
+  ({ file, setNodeId, setFiles, setFileList }) => {
 
   const handleClick = () => {
     if (file.isFile) {
       // open up download link
       window.open(file.contentLink, "_blank");
     } else {
-      // navigate inside the folder and update screen
       setNodeId(file.id);
-      const url = new URL(window.location.href); 
-      url.searchParams.set(nodeIdURLParam, file.id);
-      const newURL = url.pathname + '?' + url.searchParams.toString();
-      console.log("pushing state", file.id);
-      window.history.pushState({nodeId: file.id}, '', newURL);
     }
   }
 
@@ -67,12 +62,11 @@ const File: React.FC<FileProps> = ({ file, setNodeId, setFiles }) => {
     else {
       deleteFileFromStorage(file.contentLink);
     }
-    console.log("deleting", file.id);
     
+    // delete the file itself
     deleteFile(file.id)
-
   }
-  https://firebasestorage.googleapis.com/v0/b/fake-drive-63156.appspot.com/o/uploads%2F.DS_Store?alt=media&token=cf69090c-c844-4e9a-bf59-4b9143ea77bd
+
   return (
     <div style={containerStyle} onClick={handleClick}>
       <img 
