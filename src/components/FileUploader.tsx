@@ -14,7 +14,7 @@ const FileUploader: React.FC<FileUploaderProps> =
   ({parentId, children, appendFile}) => {
 
   const [dragging, setDragging] = useState(false);
-  const [uploading, setUploading] = useState(false);
+  const [uploading, setUploading] = useState(0);
   const [uploadProgress, setUploadProgress] = useState(0);
 
   const handleDragOver = (e: React.DragEvent<HTMLDivElement>) => {
@@ -30,7 +30,7 @@ const FileUploader: React.FC<FileUploaderProps> =
   const handleDrop = async (e: React.DragEvent<HTMLDivElement>) => {
     e.preventDefault();
     setDragging(false);
-    setUploading(true);
+    setUploading(prev => prev + 1);
 
     const items = e.dataTransfer.items;
     let entries = [];
@@ -39,8 +39,8 @@ const FileUploader: React.FC<FileUploaderProps> =
         entries.push(item.webkitGetAsEntry());
     }
 
-    traverseEntryList(entries, parentId);
-    setUploading(false);
+    await traverseEntryList(entries, parentId);
+    setUploading(prev => prev - 1);
   };
 
   const traverseEntryList = async (entries: (FileSystemEntry | null)[], parId: string) => {
@@ -75,6 +75,7 @@ const FileUploader: React.FC<FileUploaderProps> =
 
     const uploadTask = uploadBytesResumable(fileRef, file);
 
+    setUploading(prev => prev + 1);
     uploadTask.on(
       'state_changed',
       (snapshot) => {
@@ -91,6 +92,7 @@ const FileUploader: React.FC<FileUploaderProps> =
         if (updateFiles) {
           appendFile(newFile);
         }
+        setUploading(prev => prev - 1);
       }
     );
   };
@@ -128,7 +130,7 @@ const FileUploader: React.FC<FileUploaderProps> =
         border: `2px dashed ${dragging ? 'green' : 'gray'}`
       }}
     >
-      {uploading ? (
+      {uploading > 0 ? (
         <div>Uploading... {uploadProgress.toFixed(2)}%</div>
       ) : (
         <div>Drag and drop files here to upload</div>
