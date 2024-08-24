@@ -1,4 +1,4 @@
-import { CSSProperties, useState } from 'react';
+import { useState } from 'react';
 import { FileMetadata, deleteFile, getFiles } from '../models/FileMetadata';
 import fileIcon from '../imgs/file.png';
 import folderIcon from '../imgs/folder.png';
@@ -10,24 +10,6 @@ interface FileProps {
   setNodeId: React.Dispatch<React.SetStateAction<string>>;
   setFiles: React.Dispatch<React.SetStateAction<FileMetadata[]>>;
   setFileList: React.Dispatch<React.SetStateAction<FileMetadata[]>>;
-}
-
-const containerStyle: CSSProperties  = {
-  border: "1px solid white",
-  borderRadius: "0px",
-  display: "inline-block",
-  position: "relative"
-}
-
-const imgStyle: CSSProperties = {
-  width: "100px",
-  height: "100px"
-}
-
-const delStyle: CSSProperties = {
-  position: "absolute",
-  right: "0px",
-  top: "0px"
 }
 
 const File: React.FC<FileProps> = 
@@ -72,14 +54,19 @@ const File: React.FC<FileProps> =
   }
 
   return (
-    <div style={containerStyle} onClick={handleClick}>
+    <div 
+      className="file" 
+      onClick={handleClick}
+    >
       <img 
         src={file.isFile ? fileIcon : folderIcon} 
-        alt={file.fileName} 
-        style={imgStyle}
+        alt={file.fileName}
       />
-      <p> {file.fileName} </p>
-      <button type="button" onClick={handleDelete} style={delStyle}>
+      <div> <p>{file.fileName}</p> </div>
+      <button 
+        type="button" 
+        onClick={handleDelete}
+      >
         delete
       </button>
     </div>

@@ -124,21 +124,23 @@ const FileUploader: React.FC<FileUploaderProps> =
 
   return (
     <div 
+      className="fileUploader"
       onDragOver={handleDragOver}
       onDragLeave={handleDragLeave}
       onDrop={handleDrop}
       style={{
         border: `2px dashed ${dragging ? 'green' : 'gray'}`,
-        height: "100%"
       }}
     >
-      {uploading > 0 ? (
-        <div>Uploading... {uploadProgress.toFixed(2)}%</div>
-      ) : (
-        <div>Drag and drop files here to upload</div>
-      )}
+      <p>
+        {uploading > 0 ? 
+        `Uploading... ${uploadProgress.toFixed(2)}%` : 
+        "Drag and drop files here to upload"}
+      </p>
 
-      {children}
+      {/* <div className="files"> */}
+        {children}
+      {/* </div> */}
     </div>
   )
 }

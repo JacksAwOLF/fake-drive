@@ -20,6 +20,7 @@ const AncestorList: React.FC<AncestorListProps> =
 
   return (
     <>
+      <p>Click to navigate</p>
       {[...fileList].reverse().map(file => 
         <div key={file.id}>
           <button 
