@@ -4,7 +4,6 @@ import { checkFileExist, getFiles, addNewFolder, getAncestors, FileMetadata, dri
 import File from './components/File';
 import FileUploader from './components/FileUploader';
 import { navToFileId } from './util/windowHistory';
-import AncestorList from './components/AncestorList';
 
 const nodeIdURLParam = "nodeId";
 
@@ -22,55 +21,53 @@ const App: React.FC = () => {
   const [fileList, setFileList] = useState<FileMetadata[]>([]);
 
   const [newFolderName, setNewFolderName] = useState<string>("");
-  
 
   useEffect(() => {
     let isMounted = true;   // avoid double mounting on Strict Mode
     const loadFiles = async () => {
-      if (!isMounted) return;
-      console.log("mount");
 
       // if url nodeId is invalid, go to root of folder
       if (nodeId !== driveRoot.id) {
         const fileExists = await checkFileExist(nodeId);
-        if (!fileExists) {
+        if (isMounted && !fileExists) {
+          console.log("invalid nodeid", nodeId);
           setNodeId(driveRoot.id);
           return;
         }
       }
-      
-      navToFileId(nodeId, true);
 
-      // get list of files that are shown on screen
-      const result = await getFiles(nodeId);
-      setFiles(result);
+      if (!isMounted) return;
+      console.log("loading files for ", nodeId);
 
-      // get list of ancestors
-      const ancestorList = await getAncestors(nodeId);
-      setFileList(ancestorList);
+      // load list of files that are shown on screen
+      getFiles(nodeId).then(result => {
+        if (isMounted) setFiles(result);
+      });
+
+      // load list of ancestors
+      getAncestors(nodeId).then(result => {
+        if (isMounted) setFileList(result);
+      });
     }
 
     loadFiles();
     return () => { isMounted = false; }; 
   }, [nodeId]);
 
-  // enable browswer backbutton event
+  // enable browswer backbutton event on mount
   useEffect(() => {
     const handlePopState = (event: PopStateEvent) => {
       if (event.state) {
         setNodeId(event.state.nodeId);
-        setFileList(prevList => {
-          const ind = prevList.findIndex(val => val === event.state.nodeId);
-          return prevList.slice(0, ind);
-        })
       }
     };
 
-    const newURL = url.pathname + '?' + url.searchParams.toString();
-    window.history.replaceState({nodeId: nodeId}, '', );
+    navToFileId(nodeId, false);
 
     window.addEventListener('popstate', handlePopState);
-    return () => window.removeEventListener('popstate', handlePopState);
+    return () => {
+      window.removeEventListener('popstate', handlePopState);
+    }
   }, []);
 
   const handleAddFolder = async () => {
@@ -79,9 +76,9 @@ const App: React.FC = () => {
       return;
     }
 
-    setNewFolderName("");
     const newFileData = await addNewFolder(nodeId, newFolderName);
     setFiles((prevFiles) => [...prevFiles, newFileData]);
+    setNewFolderName("");
   }
 
   
@@ -90,10 +87,22 @@ const App: React.FC = () => {
     <div className="container">
 
       <div className="sidebar">
-        <AncestorList 
-          fileList={fileList}
-          setNodeId={setNodeId}
-        />
+        {[...fileList].reverse().map(file => 
+          <div key={file.id}>
+            <button 
+              type="button" 
+              onClick={() => {
+                if (file.id !== nodeId) {
+                  setNodeId(file.id);
+                  navToFileId(file.id, true);
+                }
+              }}
+            >
+              {file.fileName}
+            </button>
+            <br />
+          </div>
+        )}
       </div>
 
       <div className="header">

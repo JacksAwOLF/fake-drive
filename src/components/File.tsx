@@ -39,6 +39,7 @@ const File: React.FC<FileProps> =
       window.open(file.contentLink, "_blank");
     } else {
       setNodeId(file.id);
+      navToFileId(file.id, true);
     }
   }
 
