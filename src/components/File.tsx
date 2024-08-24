@@ -38,6 +38,7 @@ const File: React.FC<FileProps> =
       // open up download link
       window.open(file.contentLink, "_blank");
     } else {
+      // go inside folder
       setNodeId(file.id);
       navToFileId(file.id, true);
     }
@@ -46,6 +47,8 @@ const File: React.FC<FileProps> =
   const handleDelete = async (e: React.MouseEvent<HTMLButtonElement>) => {
     e.stopPropagation();
     deleteFileOrFolder(file);
+
+    // remove self from files
     setFiles((prevFiles) => prevFiles.filter(prevFile => prevFile.id !== file.id));
   }
 
