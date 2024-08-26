@@ -99,3 +99,10 @@ export async function updateContentLink(fileId: string, contentLink: string) {
     contentLink: contentLink
   });
 }
+
+export async function updateFilename(fileId: string, fileName: string) {
+  const docRef = doc(fileMetadataCollection, fileId);
+  await updateDoc(docRef, {
+    fileName: fileName
+  });
+}
