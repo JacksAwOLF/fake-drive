@@ -1,10 +1,11 @@
 import { useEffect, useState } from 'react';
-import { FileMetadata, deleteFile, getFiles, updateFilename } from '../models/FileMetadata';
+import { FileMetadata, deleteFile, getFiles, updateFilename, updateParentId } from '../models/FileMetadata';
 import fileIcon from '../imgs/file.png';
 import folderIcon from '../imgs/folder.png';
 import { deleteFileFromStorage } from '../models/fileStorage';
 import { navToFileId } from '../util/windowHistory';
 import EditableParagraph from './EditableParagraph';
+import { useDragContext } from '../contexts/useDragFileContext';
 
 interface FileProps {
   file: FileMetadata;
@@ -17,6 +18,8 @@ const File: React.FC<FileProps> =
   ({ file, setNodeId, setFiles, setFileList }) => {
 
   const [text, setText] = useState(file.fileName);
+  
+  const { draggedFileId, setDraggedFileId } = useDragContext();
 
   useEffect(() => {
 
@@ -82,6 +85,41 @@ const File: React.FC<FileProps> =
     deleteFile(file.id)
   }
 
+
+  const handleDragStart = () => {
+    console.log("drag start", file.id, draggedFileId);
+    setDraggedFileId(file.id);
+  }
+
+  const handleDragOver = () => {
+    if (draggedFileId !== null) {
+      console.log("drag over", file.id);
+    }
+  }
+
+  const handleDragEnd = () => {
+    console.log("drag end", file.id);
+    setDraggedFileId(null);    
+  }
+
+  const handleDrop = () => {
+    console.log("drag drop", file.id);
+
+    if (draggedFileId !== null 
+      && draggedFileId !== file.id
+      && !file.isFile) {
+
+      console.log("moving file in")
+
+      // update firestore
+      updateParentId(draggedFileId, file.id);
+
+      // update files
+      setFiles(prevFiles => 
+        prevFiles.filter(curFile => curFile.id !== draggedFileId))
+    }
+  }
+
   
 
   return (
@@ -92,6 +130,10 @@ const File: React.FC<FileProps> =
         src={file.isFile ? fileIcon : folderIcon} 
         alt={file.fileName}
         onClick={handleClickImage}
+        onDragStart={handleDragStart}
+        onDragOver={handleDragOver}
+        onDragEnd={handleDragEnd}
+        onDrop={handleDrop}
       />
       
       <EditableParagraph 

@@ -106,3 +106,10 @@ export async function updateFilename(fileId: string, fileName: string) {
     fileName: fileName
   });
 }
+
+export async function updateParentId(fileId: string, parentId: string) {
+  const docRef = doc(fileMetadataCollection, fileId);
+  await updateDoc(docRef, {
+    parentId: parentId
+  });
+}

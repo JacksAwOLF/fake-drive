@@ -6,6 +6,7 @@ import FileUploader from './components/FileUploader';
 import { nodeIdURLParam, usePopState } from './util/windowHistory';
 import NewFolderButton from './components/NewFolderButton';
 import AncestorList from './components/AncestorList';
+import { DragProvider } from './contexts/useDragFileContext';
 
 const App: React.FC = () => {
   const url = new URL(window.location.href); 
@@ -69,19 +70,23 @@ const App: React.FC = () => {
       </div>
 
       <div className="dragarea">
-        <FileUploader 
-          parentId={nodeId} 
-          appendFile={(file) => setFiles((prevFiles) => [...prevFiles, file])}
-        >
-          {files.map(file => 
-            <File 
-              key={file.id} 
-              file={file} 
-              setNodeId={setNodeId}
-              setFiles={setFiles}
-              setFileList={setFileList}
-            />)}
-        </FileUploader>
+        <DragProvider>
+          <FileUploader 
+            parentId={nodeId} 
+            appendFile={(file) => setFiles((prevFiles) => [...prevFiles, file])}
+          >
+            
+              {files.map(file => 
+                <File 
+                  key={file.id} 
+                  file={file} 
+                  setNodeId={setNodeId}
+                  setFiles={setFiles}
+                  setFileList={setFileList}
+                />)}
+            
+          </FileUploader>
+        </DragProvider>
       </div>      
 
     </div>

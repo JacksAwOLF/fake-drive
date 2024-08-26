@@ -40,6 +40,8 @@ const FileUploader: React.FC<FileUploaderProps> =
         entries.push(item.webkitGetAsEntry());
     }
 
+    console.log("dropping into larger box", entries);
+
     await uploadEntries(entries, parentId);
     setUploading(prev => prev - 1);
   };
